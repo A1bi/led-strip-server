@@ -4,7 +4,11 @@
 #include <string.h>
 #include <stddef.h>
 #include <unistd.h>
+#include <pthread.h>
 #include <ws2811.h>
+
+#include "utils.h"
+#include "server.h"
 
 #define DMA            10
 #define TARGET_FREQ    WS2811_TARGET_FREQ
@@ -32,13 +36,13 @@ static void setup_handlers(void) {
   sigaction(SIGTERM, &sa, NULL);
 }
 
-void panic(char message[]) {
-  printf("Error: %s\n", message);
-  exit(1);
+void *receive_udp() {
+  server_listen();
 }
 
 int main(int argc, char *argv[]) {
   int i, j, led_count = 0, led_pin = 0;
+  pthread_t server_thread;
   ws2811_return_t ret;
 
   channel_count = argc - 1;
@@ -75,6 +79,9 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "ws2811_init failed: %s\n", ws2811_get_return_t_str(ret));
     return ret;
   }
+
+  server_init();
+  pthread_create(&server_thread, NULL, receive_udp, (void *)&server_thread);
 
   while (running) {
     for (i = 0; i < leds.channel[0].count; i++) {
