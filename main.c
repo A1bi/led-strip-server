@@ -1,17 +1,18 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <stdio.h>
+#include <string.h>
 #include <stddef.h>
 #include <unistd.h>
 #include <ws2811.h>
 
-#define GPIO_PIN       18
 #define DMA            10
 #define TARGET_FREQ    WS2811_TARGET_FREQ
 #define STRIP_TYPE     WS2811_STRIP_GRB
+#define MAX_CHANNELS   2
 
 static uint8_t running = 1;
-static uint8_t led_count = 0;
+static uint8_t channel_count = 0;
 
 ws2811_t leds = {
   .freq = TARGET_FREQ,
@@ -31,28 +32,44 @@ static void setup_handlers(void) {
   sigaction(SIGTERM, &sa, NULL);
 }
 
-void setup_leds() {
-  leds.channel[0] = (ws2811_channel_t) {
-    .gpionum = GPIO_PIN,
-    .invert = 0,
-    .count = led_count,
-    .strip_type = STRIP_TYPE,
-    .brightness = 255
-  };
+void panic(char message[]) {
+  printf("Error: %s\n", message);
+  exit(1);
 }
 
 int main(int argc, char *argv[]) {
-  int i, j;
+  int i, j, led_count = 0, led_pin = 0;
   ws2811_return_t ret;
 
-  if (argc > 1) led_count = atoi(argv[1]);
-  if (led_count < 1) {
-    printf("Error: Number of LEDs not specified.\n");
-    exit(1);
+  channel_count = argc - 1;
+
+  if (channel_count < 1) {
+    panic("No channel configuration specified.");
+  } else if (channel_count > MAX_CHANNELS) {
+    panic("Too many channel configurations specified.");
+  }
+
+  for (i = 0; i < channel_count; ++i) {
+    char *val = strtok(argv[i + 1], ":");
+    if (val != NULL) led_pin = atoi(val);
+
+    val = strtok(NULL, ":");
+    if (val != NULL) led_count = atoi(val);
+
+    if (led_pin < 1 || led_count < 1) {
+      panic("Invalid channel configuration.");
+    }
+
+    leds.channel[i] = (ws2811_channel_t) {
+      .gpionum = led_pin,
+      .invert = 0,
+      .count = led_count,
+      .strip_type = STRIP_TYPE,
+      .brightness = 255
+    };
   }
 
   setup_handlers();
-  setup_leds();
 
   if ((ret = ws2811_init(&leds)) != WS2811_SUCCESS) {
     fprintf(stderr, "ws2811_init failed: %s\n", ws2811_get_return_t_str(ret));
@@ -60,8 +77,8 @@ int main(int argc, char *argv[]) {
   }
 
   while (running) {
-    for (i = 0; i < led_count; i++) {
-      for (j = 0; j < led_count; j++) {
+    for (i = 0; i < leds.channel[0].count; i++) {
+      for (j = 0; j < leds.channel[0].count; j++) {
         leds.channel[0].leds[j] = i == j ? 0x00200000 : 0;
       }
 
@@ -76,7 +93,7 @@ int main(int argc, char *argv[]) {
   }
 
   // clear LEDs
-  for (i = 0; i < led_count; i++) {
+  for (i = 0; i < leds.channel[0].count; i++) {
     leds.channel[0].leds[i] = 0;
   }
   ws2811_render(&leds);
