@@ -10,10 +10,10 @@
 #include "led.h"
 #include "server.h"
 
-static uint8_t running = 1;
+pthread_t server_thread;
 
 static void exit_handler(int signum) {
-  running = 0;
+  pthread_cancel(server_thread);
 }
 
 static void setup_handlers(void) {
@@ -55,7 +55,6 @@ void parse_arguments(int argc, char *argv[]) {
 
 int main(int argc, char *argv[]) {
   int i, j;
-  pthread_t server_thread;
 
   parse_arguments(argc, argv);
   setup_handlers();
@@ -64,17 +63,7 @@ int main(int argc, char *argv[]) {
   server_init();
 
   pthread_create(&server_thread, NULL, receive_udp, (void *)&server_thread);
-
-  while (running) {
-    for (i = 0; i < led_count(0); i++) {
-      for (j = 0; j < led_count(0); j++) {
-        led_set_color(0, j, i == j ? 0x00200000 : 0);
-      }
-
-      led_render();
-      usleep(1000000 / 30); // 30 fps
-    }
-  }
+  pthread_join(server_thread, (void *)&server_thread);
 
   led_clear();
   led_close();

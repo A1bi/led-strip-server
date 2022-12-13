@@ -5,6 +5,7 @@
 
 #include "server.h"
 #include "utils.h"
+#include "led.h"
 
 #define MAX_PACKET_SIZE 1452 // 1500 (Ethernet) - 40 (IPv6 header) - 8 (UDP header)
 
@@ -30,6 +31,17 @@ void server_init() {
   }
 }
 
+void server_process_packet(char *data, uint16_t bytes) {
+  uint16_t i = 0;
+
+  for (int i = 0; (i+2) < bytes; i += 3) {
+    led_color_t color = (uint32_t)data[i] << 16 | (uint32_t)data[i+1] << 8 | (uint32_t)data[i+2];
+    led_set_color(0, i / 3, color);
+  }
+
+  led_render();
+}
+
 void server_listen() {
   uint16_t bytes;
   char buffer[MAX_PACKET_SIZE];
@@ -40,7 +52,6 @@ void server_listen() {
 
   while (1) {
     bytes = recvfrom(sockfd, (char *)buffer, MAX_PACKET_SIZE, MSG_WAITALL, (struct sockaddr *)&cliaddr, &len);
-    buffer[bytes] = '\0';
-    printf("Received data: %s\n", buffer);
+    server_process_packet(buffer, bytes);
   }
 }
