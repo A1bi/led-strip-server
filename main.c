@@ -10,10 +10,11 @@
 #include "led.h"
 #include "server.h"
 
-pthread_t server_thread;
+pthread_t server_thread_led, server_thread_control;
 
 static void exit_handler(int signum) {
-  pthread_cancel(server_thread);
+  pthread_cancel(server_thread_control);
+  pthread_cancel(server_thread_led);
 }
 
 static void setup_handlers(void) {
@@ -25,8 +26,12 @@ static void setup_handlers(void) {
   sigaction(SIGTERM, &sa, NULL);
 }
 
-void *receive_udp() {
-  server_listen();
+void *recv_control() {
+  server_recv_control();
+}
+
+void *recv_led() {
+  server_recv_led();
 }
 
 void parse_arguments(int argc, char *argv[]) {
@@ -62,9 +67,12 @@ int main(int argc, char *argv[]) {
   led_init();
   server_init();
 
-  pthread_create(&server_thread, NULL, receive_udp, (void *)&server_thread);
-  pthread_join(server_thread, (void *)&server_thread);
+  pthread_create(&server_thread_control, NULL, recv_control, (void *)&server_thread_control);
+  pthread_create(&server_thread_led, NULL, recv_led, (void *)&server_thread_led);
+  pthread_join(server_thread_control, (void *)&server_thread_control);
+  pthread_join(server_thread_led, (void *)&server_thread_led);
 
+  server_close();
   led_clear();
   led_close();
 

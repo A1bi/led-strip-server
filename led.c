@@ -10,19 +10,22 @@ ws2811_t leds = {
 ws2811_return_t ret;
 
 void led_init() {
+  int i;
+
   if ((ret = ws2811_init(&leds)) != WS2811_SUCCESS) {
     fprintf(stderr, "ws2811_init failed: %s\n", ws2811_get_return_t_str(ret));
+  }
+
+  for (i = 0; i < led_count(0); i++) {
+    leds.channel[i].invert = 0;
+    leds.channel[i].strip_type = STRIP_TYPE;
+    leds.channel[i].brightness = 255;
   }
 }
 
 void led_set_channel(int channel, int pin, int led_count) {
-  leds.channel[channel] = (ws2811_channel_t) {
-    .gpionum = pin,
-    .invert = 0,
-    .count = led_count,
-    .strip_type = STRIP_TYPE,
-    .brightness = 255
-  };
+  leds.channel[channel].gpionum = pin;
+  leds.channel[channel].count = led_count;
 }
 
 void led_set_color(int channel, int pixel, led_color_t color) {
