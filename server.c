@@ -62,8 +62,6 @@ void server_process_packet(char *data, uint16_t bytes) {
     led_color_t color = (uint32_t)data[i] << 16 | (uint32_t)data[i+1] << 8 | (uint32_t)data[i+2];
     led_set_color(0, i / 3, color);
   }
-
-  led_render();
 }
 
 void server_recv_control() {
@@ -109,5 +107,6 @@ void server_recv_led() {
   while (1) {
     bytes = recvfrom(led_fd, (char *)buffer, MAX_LED_PACKET_SIZE, MSG_WAITALL, (struct sockaddr *)&client_addr, &len);
     server_process_packet(buffer, bytes);
+    led_source_tick();
   }
 }

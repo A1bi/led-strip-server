@@ -10,11 +10,12 @@
 #include "led.h"
 #include "server.h"
 
-pthread_t server_thread_led, server_thread_control;
+pthread_t led_render_thread, server_thread_led, server_thread_control;
 
 static void exit_handler(int signum) {
   pthread_cancel(server_thread_control);
   pthread_cancel(server_thread_led);
+  pthread_cancel(led_render_thread);
 }
 
 static void setup_handlers(void) {
@@ -24,6 +25,10 @@ static void setup_handlers(void) {
 
   sigaction(SIGINT, &sa, NULL);
   sigaction(SIGTERM, &sa, NULL);
+}
+
+void *render_loop() {
+  led_render_loop();
 }
 
 void *recv_control() {
@@ -67,8 +72,10 @@ int main(int argc, char *argv[]) {
   led_init();
   server_init();
 
+  pthread_create(&led_render_thread, NULL, render_loop, (void *)&led_render_thread);
   pthread_create(&server_thread_control, NULL, recv_control, (void *)&server_thread_control);
   pthread_create(&server_thread_led, NULL, recv_led, (void *)&server_thread_led);
+  pthread_join(led_render_thread, (void *)&led_render_thread);
   pthread_join(server_thread_control, (void *)&server_thread_control);
   pthread_join(server_thread_led, (void *)&server_thread_led);
 
