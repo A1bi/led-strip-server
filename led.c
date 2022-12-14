@@ -1,4 +1,3 @@
-#include <stdbool.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/time.h>
@@ -16,7 +15,7 @@ ws2811_t leds = {
   .dmanum = DMA
 };
 
-bool activity_indicator = true;
+bool activity_indicator_enabled = false;
 int fps = 24;
 struct timeval last_source_activity = {0}, last_general_activity = {0};
 bool last_general_activity_state = false, last_source_activity_state = false;
@@ -42,13 +41,29 @@ void led_set_color(int channel, int pixel, led_color_t color) {
   leds.channel[channel].leds[pixel] = color;
 }
 
+void led_toggle_activity_color(int pixel, bool toggle) {
+  int i = 0;
+
+  for (i = 0; i < MAX_CHANNELS; i++) {
+    led_set_color(i, pixel, toggle ? LED_ACTIVITY_COLOR : 0);
+  }
+}
+
+void led_toggle_activity_indicator(bool enabled) {
+  activity_indicator_enabled = enabled;
+
+  if (!enabled) {
+    led_toggle_activity_color(0, false);
+    led_toggle_activity_color(1, false);
+  }
+}
+
 void led_source_tick() {
   gettimeofday(&last_source_activity, NULL);
 }
 
 void led_indicate_activity() {
   struct timeval now = {0};
-  int i;
 
   gettimeofday(&now, NULL);
 
@@ -65,10 +80,8 @@ void led_indicate_activity() {
       last_source_activity_state = last_general_activity_state;
     }
 
-    for (i = 0; i < MAX_CHANNELS; i++) {
-      led_set_color(i, 0, last_general_activity_state ? LED_ACTIVITY_COLOR : 0);
-      led_set_color(i, 1, last_source_activity_state ? LED_ACTIVITY_COLOR : 0);
-    }
+    led_toggle_activity_color(0, last_general_activity_state);
+    led_toggle_activity_color(1, last_source_activity_state);
   }
 }
 
@@ -82,7 +95,7 @@ void led_render() {
 
 void led_render_loop() {
   while (true) {
-    if (activity_indicator) {
+    if (activity_indicator_enabled) {
       led_indicate_activity();
     }
 

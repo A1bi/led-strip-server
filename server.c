@@ -8,7 +8,7 @@
 #include "utils.h"
 #include "led.h"
 
-#define CONTROL_PACKET_SIZE 4
+#define CONTROL_PACKET_SIZE 5
 #define MAX_LED_PACKET_SIZE 1452 // 1500 (Ethernet) - 40 (IPv6 header) - 8 (UDP header)
 
 int control_fd, led_fd;
@@ -86,8 +86,10 @@ void server_recv_control() {
         }
       }
 
-      printf("Received control packet:\nchan 1 = %d:%d\nchan 2 = %d:%d\n",
-             buffer_req[0], buffer_req[1], buffer_req[2], buffer_req[3]);
+      led_toggle_activity_indicator((bool)buffer_req[4]);
+
+      printf("Received control packet:\nchan 1 = %d:%d\nchan 2 = %d:%d\nactivity = %d\n",
+             buffer_req[0], buffer_req[1], buffer_req[2], buffer_req[3], buffer_req[4]);
       strncpy(buffer_res, "OK\0", 3);
     }
 
