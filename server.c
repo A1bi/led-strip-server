@@ -80,11 +80,13 @@ void server_recv_control() {
     strncpy(buffer_res, "NOK", 3);
 
     if (read(conn_fd, buffer_req, sizeof(buffer_req)) == CONTROL_PACKET_SIZE) {
+      led_close();
       for (i = 0; i < MAX_CHANNELS; i++) {
         if (buffer_req[i*2] > 0) {
           led_set_channel(i, buffer_req[i*2], buffer_req[i*2+1]);
         }
       }
+      led_init();
 
       led_toggle_activity_indicator((bool)buffer_req[4]);
 

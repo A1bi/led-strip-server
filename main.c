@@ -43,23 +43,27 @@ void parse_arguments(int argc, char *argv[]) {
   int i, channel_count = argc - 1, led_count = 0, led_pin = 0;
 
   if (channel_count < 1) {
-    panic("No channel configuration specified.");
+    led_set_channel(0, 18, 24);
+    led_set_channel(1, 19, 0);
+    printf("No channel configuration specified. Using default: 18:24, 19:0.\n");
+
   } else if (channel_count > MAX_CHANNELS) {
     panic("Too many channel configurations specified.");
-  }
 
-  for (i = 0; i < channel_count; ++i) {
-    char *val = strtok(argv[i + 1], ":");
-    if (val != NULL) led_pin = atoi(val);
+  } else {
+    for (i = 0; i < channel_count; ++i) {
+      char *val = strtok(argv[i + 1], ":");
+      if (val != NULL) led_pin = atoi(val);
 
-    val = strtok(NULL, ":");
-    if (val != NULL) led_count = atoi(val);
+      val = strtok(NULL, ":");
+      if (val != NULL) led_count = atoi(val);
 
-    if (led_pin < 1 || led_count < 1) {
-      panic("Invalid channel configuration.");
+      if (led_pin < 1 || led_count < 1) {
+        panic("Invalid channel configuration.");
+      }
+
+      led_set_channel(i, led_pin, led_count);
     }
-
-    led_set_channel(i, led_pin, led_count);
   }
 }
 
