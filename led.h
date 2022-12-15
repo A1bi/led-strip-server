@@ -1,10 +1,7 @@
 #include <stdbool.h>
 #include <ws2811.h>
 
-#define DMA            10
-#define TARGET_FREQ    WS2811_TARGET_FREQ
-#define STRIP_TYPE     WS2811_STRIP_GRB
-#define MAX_CHANNELS   2
+#define LED_MAX_CHANNELS 2
 
 typedef ws2811_led_t led_color_t;
 

@@ -4,15 +4,18 @@
 
 #include "led.h"
 
-#define LED_ACTIVITY_INTERVAL 50
-#define LED_ACTIVITY_COLOR 0x00800000
+#define LED_ACTIVITY_INTERVAL       50
+#define LED_ACTIVITY_COLOR          0x00800000
 #define LED_SOURCE_ACTIVITY_TIMEOUT 100
+#define LED_DMA                     10
+#define LED_TARGET_FREQ             WS2811_TARGET_FREQ
+#define LED_STRIP_TYPE              WS2811_STRIP_GRB
 
 #define TIMEDIFF_MS(tv1, tv2) ((tv1.tv_sec * 1000 + tv1.tv_usec / 1000) - (tv2.tv_sec * 1000 + tv2.tv_usec / 1000))
 
 ws2811_t leds = {
-  .freq = TARGET_FREQ,
-  .dmanum = DMA
+  .freq = LED_TARGET_FREQ,
+  .dmanum = LED_DMA
 };
 
 bool activity_indicator_enabled = false;
@@ -31,7 +34,7 @@ void led_set_channel(uint8_t channel, uint8_t pin, uint16_t led_count) {
   leds.channel[channel].gpionum = pin;
   leds.channel[channel].count = led_count;
   leds.channel[channel].invert = 0;
-  leds.channel[channel].strip_type = STRIP_TYPE;
+  leds.channel[channel].strip_type = LED_STRIP_TYPE;
   leds.channel[channel].brightness = 255;
 }
 
@@ -40,7 +43,7 @@ void led_set_color(uint8_t channel, uint16_t pixel, led_color_t color) {
 }
 
 void led_toggle_activity_color(uint16_t pixel, bool toggle) {
-  for (uint8_t i = 0; i < MAX_CHANNELS; i++) {
+  for (uint8_t i = 0; i < LED_MAX_CHANNELS; i++) {
     led_set_color(i, pixel, toggle ? LED_ACTIVITY_COLOR : 0);
   }
 }
@@ -105,7 +108,7 @@ void led_render_loop() {
 }
 
 uint16_t led_count(uint8_t channel) {
-  if (channel >= MAX_CHANNELS) return 0;
+  if (channel >= LED_MAX_CHANNELS) return 0;
 
   return leds.channel[channel].count;
 }

@@ -46,7 +46,7 @@ void parse_arguments(int argc, char *argv[]) {
     led_set_channel(1, 19, 0);
     printf("No channel configuration specified. Using default: 18:24, 19:0.\n");
 
-  } else if (channel_count > MAX_CHANNELS) {
+  } else if (channel_count > LED_MAX_CHANNELS) {
     panic("Too many channel configurations specified.");
 
   } else {

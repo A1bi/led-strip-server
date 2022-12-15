@@ -9,8 +9,8 @@
 #include "utils.h"
 #include "led.h"
 
-#define CONTROL_PACKET_SIZE 6
-#define MAX_LED_PACKET_SIZE 1452 // 1500 (Ethernet) - 40 (IPv6 header) - 8 (UDP header)
+#define SERVER_CONTROL_PACKET_SIZE 6
+#define SERVER_MAX_LED_PACKET_SIZE 1452 // 1500 (Ethernet) - 40 (IPv6 header) - 8 (UDP header)
 
 int control_fd, led_fd;
 
@@ -71,7 +71,7 @@ void server_process_packet(char *data, uint16_t bytes) {
 }
 
 void server_recv_control() {
-  char buffer_req[CONTROL_PACKET_SIZE], buffer_res[3];
+  char buffer_req[SERVER_CONTROL_PACKET_SIZE], buffer_res[3];
   struct sockaddr_in6 client_addr = {0};
   int conn_fd, len = sizeof(client_addr);
 
@@ -83,9 +83,9 @@ void server_recv_control() {
 
     strncpy(buffer_res, "NOK", 3);
 
-    if (read(conn_fd, buffer_req, sizeof(buffer_req)) == CONTROL_PACKET_SIZE) {
+    if (read(conn_fd, buffer_req, sizeof(buffer_req)) == SERVER_CONTROL_PACKET_SIZE) {
       led_close();
-      for (uint8_t i = 0; i < MAX_CHANNELS; i++) {
+      for (uint8_t i = 0; i < LED_MAX_CHANNELS; i++) {
         if (buffer_req[i*2] > 0) {
           led_set_channel(i, buffer_req[i*2], buffer_req[i*2+1]);
         }
@@ -106,12 +106,12 @@ void server_recv_control() {
 }
 
 void server_recv_led() {
-  char buffer[MAX_LED_PACKET_SIZE];
+  char buffer[SERVER_MAX_LED_PACKET_SIZE];
   struct sockaddr_in6 client_addr = {0};
   int len = sizeof(client_addr);
 
   while (true) {
-    uint16_t bytes = recvfrom(led_fd, (char *)buffer, MAX_LED_PACKET_SIZE, MSG_WAITALL, (struct sockaddr *)&client_addr, &len);
+    uint16_t bytes = recvfrom(led_fd, (char *)buffer, SERVER_MAX_LED_PACKET_SIZE, MSG_WAITALL, (struct sockaddr *)&client_addr, &len);
     server_process_packet(buffer, bytes);
     led_source_tick();
   }
