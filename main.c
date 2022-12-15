@@ -40,9 +40,7 @@ void *recv_led() {
 }
 
 void parse_arguments(int argc, char *argv[]) {
-  uint8_t i, channel_count = argc - 1, led_pin = 0;
-  uint16_t led_count = 0;
-
+  uint8_t channel_count = argc - 1;
   if (channel_count < 1) {
     led_set_channel(0, 18, 24);
     led_set_channel(1, 19, 0);
@@ -52,7 +50,9 @@ void parse_arguments(int argc, char *argv[]) {
     panic("Too many channel configurations specified.");
 
   } else {
-    for (i = 0; i < channel_count; ++i) {
+    for (uint8_t i = 0; i < channel_count; ++i) {
+      uint8_t led_pin = 0;
+      uint16_t led_count = 0;
       char *val = strtok(argv[i + 1], ":");
       if (val != NULL) led_pin = atoi(val);
 
@@ -69,8 +69,6 @@ void parse_arguments(int argc, char *argv[]) {
 }
 
 int main(int argc, char *argv[]) {
-  int i, j;
-
   parse_arguments(argc, argv);
   setup_handlers();
 

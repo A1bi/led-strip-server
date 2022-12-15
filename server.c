@@ -39,10 +39,7 @@ void server_init_led_interface(struct sockaddr_in6 *interface) {
 }
 
 void server_init() {
-  struct sockaddr_in6 interface;
-
-  memset(&interface, 0, sizeof(interface));
-
+  struct sockaddr_in6 interface = {0};
   interface.sin6_family = AF_INET6;
   interface.sin6_addr = in6addr_any;
   interface.sin6_port = htons(PORT);
@@ -75,10 +72,8 @@ void server_process_packet(char *data, uint16_t bytes) {
 
 void server_recv_control() {
   char buffer_req[CONTROL_PACKET_SIZE], buffer_res[3];
-  struct sockaddr_in6 client_addr;
-  int conn_fd, len = sizeof(client_addr), i;
-
-  memset(&client_addr, 0, len);
+  struct sockaddr_in6 client_addr = {0};
+  int conn_fd, len = sizeof(client_addr);
 
   while (true) {
     if ((conn_fd = accept(control_fd, (struct sockaddr *)&client_addr, &len)) < 0) {
@@ -90,7 +85,7 @@ void server_recv_control() {
 
     if (read(conn_fd, buffer_req, sizeof(buffer_req)) == CONTROL_PACKET_SIZE) {
       led_close();
-      for (i = 0; i < MAX_CHANNELS; i++) {
+      for (uint8_t i = 0; i < MAX_CHANNELS; i++) {
         if (buffer_req[i*2] > 0) {
           led_set_channel(i, buffer_req[i*2], buffer_req[i*2+1]);
         }
@@ -111,15 +106,12 @@ void server_recv_control() {
 }
 
 void server_recv_led() {
-  uint16_t bytes;
   char buffer[MAX_LED_PACKET_SIZE];
-  struct sockaddr_in6 client_addr;
+  struct sockaddr_in6 client_addr = {0};
   int len = sizeof(client_addr);
 
-  memset(&client_addr, 0, len);
-
   while (true) {
-    bytes = recvfrom(led_fd, (char *)buffer, MAX_LED_PACKET_SIZE, MSG_WAITALL, (struct sockaddr *)&client_addr, &len);
+    uint16_t bytes = recvfrom(led_fd, (char *)buffer, MAX_LED_PACKET_SIZE, MSG_WAITALL, (struct sockaddr *)&client_addr, &len);
     server_process_packet(buffer, bytes);
     led_source_tick();
   }

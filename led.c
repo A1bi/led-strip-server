@@ -21,11 +21,9 @@ struct timeval last_source_activity = {0}, last_general_activity = {0};
 bool last_general_activity_state = false, last_source_activity_state = false;
 
 void led_init() {
-  int i;
-  ws2811_return_t ret;
-
-  if ((ret = ws2811_init(&leds)) != WS2811_SUCCESS) {
-    fprintf(stderr, "ws2811_init failed: %s\n", ws2811_get_return_t_str(ret));
+  ws2811_return_t result = ws2811_init(&leds);
+  if (result != WS2811_SUCCESS) {
+    fprintf(stderr, "ws2811_init failed: %s\n", ws2811_get_return_t_str(result));
   }
 }
 
@@ -42,9 +40,7 @@ void led_set_color(uint8_t channel, uint16_t pixel, led_color_t color) {
 }
 
 void led_toggle_activity_color(uint16_t pixel, bool toggle) {
-  uint8_t i = 0;
-
-  for (i = 0; i < MAX_CHANNELS; i++) {
+  for (uint8_t i = 0; i < MAX_CHANNELS; i++) {
     led_set_color(i, pixel, toggle ? LED_ACTIVITY_COLOR : 0);
   }
 }
@@ -90,10 +86,9 @@ void led_indicate_activity() {
 }
 
 void led_render() {
-  ws2811_return_t ret;
-
-  if ((ret = ws2811_render(&leds)) != WS2811_SUCCESS) {
-    fprintf(stderr, "ws2811_render failed: %s\n", ws2811_get_return_t_str(ret));
+  ws2811_return_t result = ws2811_render(&leds);
+  if (result != WS2811_SUCCESS) {
+    fprintf(stderr, "ws2811_render failed: %s\n", ws2811_get_return_t_str(result));
   }
 }
 
@@ -116,9 +111,7 @@ uint16_t led_count(uint8_t channel) {
 }
 
 void led_clear() {
-  uint16_t i = 0;
-
-  for (i = 0; i < led_count(0); i++) {
+  for (uint16_t i = 0; i < led_count(0); i++) {
     leds.channel[0].leds[i] = 0;
   }
   led_render();
