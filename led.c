@@ -110,6 +110,8 @@ void led_render_loop() {
 }
 
 int led_count(int channel) {
+  if (channel >= MAX_CHANNELS) return 0;
+
   return leds.channel[channel].count;
 }
 

@@ -56,11 +56,19 @@ void server_close() {
 }
 
 void server_process_packet(char *data, uint16_t bytes) {
-  uint16_t i = 0;
+  if (bytes < 6) return; // 1 (channel) + 2 (offset) + 3 (first color)
 
-  for (int i = 0; (i+2) < bytes; i += 3) {
-    led_color_t color = (uint32_t)data[i] << 16 | (uint32_t)data[i+1] << 8 | (uint32_t)data[i+2];
-    led_set_color(0, i / 3, color);
+  uint8_t channel = data[0];
+  uint16_t offset = ntohs(*(uint16_t*)&(data[1]));
+  char *color_data = &(data[3]);
+  uint16_t color_bytes = bytes - 2;
+
+  for (uint16_t i = 0; (i+2) < color_bytes; i += 3) {
+    uint16_t led_index = offset + i / 3;
+    if (led_index > led_count(channel)) break;
+
+    led_color_t color = (uint32_t)color_data[i] << 16 | (uint32_t)color_data[i+1] << 8 | (uint32_t)color_data[i+2];
+    led_set_color(channel, led_index, color);
   }
 }
 
