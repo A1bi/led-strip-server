@@ -29,7 +29,7 @@ void led_init() {
   }
 }
 
-void led_set_channel(int channel, int pin, int led_count) {
+void led_set_channel(uint8_t channel, uint8_t pin, uint16_t led_count) {
   leds.channel[channel].gpionum = pin;
   leds.channel[channel].count = led_count;
   leds.channel[channel].invert = 0;
@@ -37,12 +37,12 @@ void led_set_channel(int channel, int pin, int led_count) {
   leds.channel[channel].brightness = 255;
 }
 
-void led_set_color(int channel, int pixel, led_color_t color) {
+void led_set_color(uint8_t channel, uint16_t pixel, led_color_t color) {
   leds.channel[channel].leds[pixel] = color;
 }
 
-void led_toggle_activity_color(int pixel, bool toggle) {
-  int i = 0;
+void led_toggle_activity_color(uint16_t pixel, bool toggle) {
+  uint8_t i = 0;
 
   for (i = 0; i < MAX_CHANNELS; i++) {
     led_set_color(i, pixel, toggle ? LED_ACTIVITY_COLOR : 0);
@@ -109,14 +109,14 @@ void led_render_loop() {
   }
 }
 
-int led_count(int channel) {
+uint16_t led_count(uint8_t channel) {
   if (channel >= MAX_CHANNELS) return 0;
 
   return leds.channel[channel].count;
 }
 
 void led_clear() {
-  int i = 0;
+  uint16_t i = 0;
 
   for (i = 0; i < led_count(0); i++) {
     leds.channel[0].leds[i] = 0;

@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "server.h"
 #include "utils.h"
@@ -67,7 +68,7 @@ void server_process_packet(char *data, uint16_t bytes) {
     uint16_t led_index = offset + i / 3;
     if (led_index > led_count(channel)) break;
 
-    led_color_t color = (uint32_t)color_data[i] << 16 | (uint32_t)color_data[i+1] << 8 | (uint32_t)color_data[i+2];
+    led_color_t color = (led_color_t)color_data[i] << 16 | (led_color_t)color_data[i+1] << 8 | (led_color_t)color_data[i+2];
     led_set_color(channel, led_index, color);
   }
 }
@@ -79,7 +80,7 @@ void server_recv_control() {
 
   memset(&client_addr, 0, len);
 
-  while (1) {
+  while (true) {
     if ((conn_fd = accept(control_fd, (struct sockaddr *)&client_addr, &len)) < 0) {
       printf("Failed to accept connection.");
       continue;
@@ -117,7 +118,7 @@ void server_recv_led() {
 
   memset(&client_addr, 0, len);
 
-  while (1) {
+  while (true) {
     bytes = recvfrom(led_fd, (char *)buffer, MAX_LED_PACKET_SIZE, MSG_WAITALL, (struct sockaddr *)&client_addr, &len);
     server_process_packet(buffer, bytes);
     led_source_tick();

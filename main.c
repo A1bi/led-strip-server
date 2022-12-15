@@ -40,7 +40,8 @@ void *recv_led() {
 }
 
 void parse_arguments(int argc, char *argv[]) {
-  int i, channel_count = argc - 1, led_count = 0, led_pin = 0;
+  uint8_t i, channel_count = argc - 1, led_pin = 0;
+  uint16_t led_count = 0;
 
   if (channel_count < 1) {
     led_set_channel(0, 18, 24);
