@@ -11,6 +11,7 @@ typedef ws2811_led_t led_color_t;
 void led_init();
 void led_set_channel(int channel, int pin, int led_count);
 void led_set_color(int channel, int pixel, led_color_t color);
+void led_set_fps(int fps);
 void led_toggle_activity_indicator(bool enabled);
 void led_source_tick();
 void led_render();

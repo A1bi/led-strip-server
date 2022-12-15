@@ -49,6 +49,10 @@ void led_toggle_activity_color(int pixel, bool toggle) {
   }
 }
 
+void led_set_fps(int f) {
+  if (f > 0) fps = f;
+}
+
 void led_toggle_activity_indicator(bool enabled) {
   activity_indicator_enabled = enabled;
 
