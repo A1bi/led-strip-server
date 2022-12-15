@@ -114,8 +114,10 @@ uint16_t led_count(uint8_t channel) {
 }
 
 void led_clear() {
-  for (uint16_t i = 0; i < led_count(0); i++) {
-    leds.channel[0].leds[i] = 0;
+  for (uint8_t i = 0; i < LED_MAX_CHANNELS; i++) {
+    for (uint16_t j = 0; j < led_count(i); j++) {
+      led_set_color(i, j, 0);
+    }
   }
   led_render();
 }
