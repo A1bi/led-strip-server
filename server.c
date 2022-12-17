@@ -92,12 +92,10 @@ void server_recv_control() {
       led_close();
       for (uint8_t i = 0; i < LED_MAX_CHANNELS; i++) {
         char *channel_data = buffer_req + i*3;
-        int pin = channel_data[0];
-        if (pin > 0) {
-          uint16_t led_count = ntohs(*(uint16_t*)(channel_data + 1));
-          led_set_channel(i, pin, led_count);
-          printf("chan %d = %d:%d\n", i+1, pin, led_count);
-        }
+        uint8_t pin = channel_data[0];
+        uint16_t led_count = ntohs(*(uint16_t*)(channel_data + 1));
+        led_set_channel(i, pin, led_count);
+        printf("chan %d = %d:%d\n", i+1, pin, led_count);
       }
       led_init();
 

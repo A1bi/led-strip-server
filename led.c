@@ -31,7 +31,7 @@ void led_init() {
 }
 
 void led_set_channel(uint8_t channel, uint8_t pin, uint16_t led_count) {
-  leds.channel[channel].gpionum = pin;
+  if (pin > 0) leds.channel[channel].gpionum = pin;
   leds.channel[channel].count = led_count;
   leds.channel[channel].invert = 0;
   leds.channel[channel].strip_type = LED_STRIP_TYPE;
