@@ -19,7 +19,7 @@ ws2811_t leds = {
 };
 
 bool activity_indicator_enabled = false;
-int fps = 24;
+uint8_t fps = 24;
 struct timeval last_source_activity = {0}, last_general_activity = {0};
 bool last_general_activity_state = false, last_source_activity_state = false;
 
@@ -48,7 +48,7 @@ void led_toggle_activity_color(uint16_t pixel, bool toggle) {
   }
 }
 
-void led_set_fps(int f) {
+void led_set_fps(uint8_t f) {
   if (f > 0) fps = f;
 }
 

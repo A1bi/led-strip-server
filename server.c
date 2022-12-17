@@ -99,7 +99,7 @@ void server_recv_control() {
       }
       led_init();
 
-      led_set_fps((int)buffer_req[6]);
+      led_set_fps((uint8_t)buffer_req[6]);
       led_toggle_activity_indicator((bool)buffer_req[7]);
 
       printf("fps = %d\nactivity = %d\n", buffer_req[6], buffer_req[7]);
