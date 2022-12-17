@@ -45,7 +45,7 @@ You can include color information for a maximum of 483 LEDs in one packet. To re
 The daemon listens for TCP connections on port `29384`. It is a binary interface to control the setup and is structured like so:
 
 ```
-|     1 byte    |     1 byte     |    1 byte     |     1 byte     | 1 byte |  1 byte  |
+|     1 byte    |    2 bytes     |    1 byte     |    2 bytes     | 1 byte |  1 byte  |
 ---------------------------------------------------------------------------------------
 | channel 1 pin | channel 1 LEDs | channel 2 pin | channel 2 LEDs |  FPS   | activity |
 ```

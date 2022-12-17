@@ -9,7 +9,7 @@
 #include "utils.h"
 #include "led.h"
 
-#define SERVER_CONTROL_PACKET_SIZE 6
+#define SERVER_CONTROL_PACKET_SIZE 8
 #define SERVER_MAX_LED_PACKET_SIZE 1452 // 1500 (Ethernet) - 40 (IPv6 header) - 8 (UDP header)
 
 int control_fd, led_fd;
@@ -57,7 +57,7 @@ void server_process_packet(char *data, uint16_t bytes) {
   if (bytes < 6) return; // 1 (channel) + 2 (offset) + 3 (first color)
 
   uint8_t channel = data[0];
-  uint16_t offset = ntohs(*(uint16_t*)&(data[1]));
+  uint16_t offset = ntohs(*(uint16_t*)(data + 1));
   char *color_data = &(data[3]);
   uint16_t color_bytes = bytes - 2;
 
@@ -87,19 +87,24 @@ void server_recv_control() {
     strncpy(buffer_res, "NOK", size_res);
 
     if (read(conn_fd, buffer_req, sizeof(buffer_req)) == SERVER_CONTROL_PACKET_SIZE) {
+      printf("Received control packet:\n");
+
       led_close();
       for (uint8_t i = 0; i < LED_MAX_CHANNELS; i++) {
-        if (buffer_req[i*2] > 0) {
-          led_set_channel(i, buffer_req[i*2], buffer_req[i*2+1]);
+        char *channel_data = buffer_req + i*3;
+        int pin = channel_data[0];
+        if (pin > 0) {
+          uint16_t led_count = ntohs(*(uint16_t*)(channel_data + 1));
+          led_set_channel(i, pin, led_count);
+          printf("chan %d = %d:%d\n", i+1, pin, led_count);
         }
       }
       led_init();
 
-      led_set_fps((int)buffer_req[4]);
-      led_toggle_activity_indicator((bool)buffer_req[5]);
+      led_set_fps((int)buffer_req[6]);
+      led_toggle_activity_indicator((bool)buffer_req[7]);
 
-      printf("Received control packet:\nchan 1 = %d:%d\nchan 2 = %d:%d\nfps = %d\nactivity = %d\n",
-             buffer_req[0], buffer_req[1], buffer_req[2], buffer_req[3], buffer_req[4], buffer_req[5]);
+      printf("fps = %d\nactivity = %d\n", buffer_req[6], buffer_req[7]);
       size_res = 3;
       strncpy(buffer_res, "OK", size_res);
     }
