@@ -29,14 +29,17 @@ static void setup_handlers(void) {
 
 void *render_loop() {
   led_render_loop();
+  return NULL;
 }
 
 void *recv_control() {
   server_recv_control();
+  return NULL;
 }
 
 void *recv_led() {
   server_recv_led();
+  return NULL;
 }
 
 void parse_arguments(int argc, char *argv[]) {
@@ -75,9 +78,9 @@ int main(int argc, char *argv[]) {
   led_init();
   server_init();
 
-  pthread_create(&led_render_thread, NULL, render_loop, (void *)&led_render_thread);
-  pthread_create(&server_thread_control, NULL, recv_control, (void *)&server_thread_control);
-  pthread_create(&server_thread_led, NULL, recv_led, (void *)&server_thread_led);
+  pthread_create(&led_render_thread, NULL, render_loop, NULL);
+  pthread_create(&server_thread_control, NULL, recv_control, NULL);
+  pthread_create(&server_thread_led, NULL, recv_led, NULL);
   pthread_join(led_render_thread, (void *)&led_render_thread);
   pthread_join(server_thread_control, (void *)&server_thread_control);
   pthread_join(server_thread_led, (void *)&server_thread_led);

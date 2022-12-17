@@ -71,17 +71,20 @@ void server_process_packet(char *data, uint16_t bytes) {
 }
 
 void server_recv_control() {
-  char buffer_req[SERVER_CONTROL_PACKET_SIZE], buffer_res[3];
+  char buffer_req[SERVER_CONTROL_PACKET_SIZE], buffer_res[4];
+  size_t size_res;
+  int conn_fd;
   struct sockaddr_in6 client_addr = {0};
-  int conn_fd, len = sizeof(client_addr);
+  socklen_t client_size = sizeof(client_addr);
 
   while (true) {
-    if ((conn_fd = accept(control_fd, (struct sockaddr *)&client_addr, &len)) < 0) {
+    if ((conn_fd = accept(control_fd, (struct sockaddr *)&client_addr, &client_size)) < 0) {
       printf("Failed to accept connection.");
       continue;
     }
 
-    strncpy(buffer_res, "NOK", 3);
+    size_res = 4;
+    strncpy(buffer_res, "NOK", size_res);
 
     if (read(conn_fd, buffer_req, sizeof(buffer_req)) == SERVER_CONTROL_PACKET_SIZE) {
       led_close();
@@ -97,10 +100,11 @@ void server_recv_control() {
 
       printf("Received control packet:\nchan 1 = %d:%d\nchan 2 = %d:%d\nfps = %d\nactivity = %d\n",
              buffer_req[0], buffer_req[1], buffer_req[2], buffer_req[3], buffer_req[4], buffer_req[5]);
-      strncpy(buffer_res, "OK\0", 3);
+      size_res = 3;
+      strncpy(buffer_res, "OK", size_res);
     }
 
-    write(conn_fd, buffer_res, sizeof(buffer_res));
+    write(conn_fd, buffer_res, size_res);
     close(conn_fd);
   }
 }
@@ -108,10 +112,10 @@ void server_recv_control() {
 void server_recv_led() {
   char buffer[SERVER_MAX_LED_PACKET_SIZE];
   struct sockaddr_in6 client_addr = {0};
-  int len = sizeof(client_addr);
+  socklen_t client_size = sizeof(client_addr);
 
   while (true) {
-    uint16_t bytes = recvfrom(led_fd, (char *)buffer, SERVER_MAX_LED_PACKET_SIZE, MSG_WAITALL, (struct sockaddr *)&client_addr, &len);
+    uint16_t bytes = recvfrom(led_fd, (char *)buffer, SERVER_MAX_LED_PACKET_SIZE, MSG_WAITALL, (struct sockaddr *)&client_addr, &client_size);
     server_process_packet(buffer, bytes);
     led_source_tick();
   }
